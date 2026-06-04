@@ -1,75 +1,119 @@
-[Documentation Home](README.md)
+# 📚 OpenPlanter Documentation
+
+Welcome to the complete documentation for this repository. This documentation is automatically generated and maintained by Woden Docbot.
+
+![Health: Healthy](https://img.shields.io/badge/Health-Healthy-green) ![Files Documented: 9](https://img.shields.io/badge/Files_Documented-9-blue) ![Coverage: 100](https://img.shields.io/badge/Coverage-100-green) ![Last Updated: 2026-06-04](https://img.shields.io/badge/Last_Updated-2026--06--04-gray)
+
+## 🔗 Quick Links
+
+[📂 agent](./agent/README.md) | [📂 openplanter-desktop](./openplanter-desktop/README.md)
+[📋 Dependencies](./DEPENDENCIES.md)
+
 
 ---
 
-# 📁 _docs
-
-> **Purpose:** Documentation index and directory-level README that explains the structure, purpose, and contents of the repository's documentation and top-level subdirectories.
-> 
-
-![Organization: Hierarchical](https://img.shields.io/badge/Organization-Hierarchical-blue)
-
-## 📑 Table of Contents
+> A modular project that orchestrates multi-turn LLM agent behavior and provides a dedicated desktop frontend for interacting with the agent.
 
 
-- [Overview](#overview)
-- [Subdirectories](#subdirectories)
-- [Dependencies](#dependencies)
-- [Architecture Notes](#architecture-notes)
+
+## 📖 Overview
+
+OpenPlanter coordinates multi-turn agent behavior and provides a desktop client. The agent layer contains Python modules that drive runtime decision-making (engine.py), centralize system prompt text (prompts.py), and define provider-neutral tool schemas with conversion helpers to provider-specific shapes (tool_defs.py). The agent supports both OpenAI and Anthropic providers via these conversion helpers.
+
+The repository also contains a desktop application frontend organized under openplanter-desktop/frontend/src/. That frontend implements UI components, command logic, observable application state, and the primary stylesheet. The agent layer sits between higher-level orchestration and provider-specific integration so the desktop client and other orchestrators can rely on a consistent agent interface.
+
+
+### 🧩 Key Components
+
+| Component | Purpose | Technologies |
+| --- | --- | --- |
+| **agent (engine, prompts, tool_defs)** | Orchestrates multi-turn agent behavior, maintains centralized system prompts, and provides provider-neutral tool schema definitions plus helpers to convert those schemas into shapes suitable for LLM provider APIs. | `Python`, `OpenAI API`, `Anthropic API` |
+| **openplanter-desktop (frontend)** | Desktop application frontend organized under frontend/src/, implementing UI components, command logic, observable application state, and styles for interacting with the OpenPlanter agent. | N/A |
+
+
+
+
+**Component Architecture:**
+
+```mermaid
+graph TD
+    C0[agent (engine, prompts, tool_defs)]
+    C1[openplanter-desktop (frontend)]
+    C0 --> C1
+```
+
+### 🏗️ Architecture
+
+Layered, modular codebase: an agent layer (Python modules for turn orchestration, prompts, and provider-neutral tool schemas) and a separate desktop frontend subtree. Provider adapters convert tool schemas to OpenAI and Anthropic API shapes so higher-level orchestrators and the desktop UI can use a consistent agent interface.
+
+### 💡 Use Cases
+
+- ✦ Orchestrating multi-turn LLM agent interactions with centralized system prompts
+- ✦ Using a desktop frontend to interact with the agent and issue commands
+- ✦ Extending or converting tool schema definitions for OpenAI and Anthropic integrations
+
+
+
+### 🔧 Technologies
+
+
+**Languages:** ![Python: ](https://img.shields.io/badge/Python--blue)
+![OpenAI API: ](https://img.shields.io/badge/OpenAI_API--blue) ![Anthropic API: ](https://img.shields.io/badge/Anthropic_API--blue)
 
 ---
 
-## Overview
+## 📑 Documentation Sections
 
-This _docs directory serves as the documentation index for the repository and organizes information about the project's agent modules and desktop frontend. At the root of this directory there are no top-level files; instead the documentation is organized into subdirectories. The agent/ subdirectory contains the core agent-facing modules used by OpenPlanter to coordinate multi-turn agent behavior, centralize system prompt text, and define provider-neutral tool schemas with helpers to convert them into provider-specific shapes. The openplanter-desktop/ subdirectory is the container for the desktop application's frontend source tree and organizes the UI components, command logic, application state, and styles under an entry frontend/ subdirectory.
+### [agent](./agent/README.md)
+Contains agent-facing modules for coordinating agent turns, maintaining prompts, and converting tool schema definitions for multiple LLM providers.
 
-Together these subdirectories document two complementary areas of the project: the agent runtime modules that drive conversational coordination and tool-schema handling, and the desktop frontend that implements the user-facing application. The _docs directory's role is to provide discoverability and guidance for developers working in these areas by collecting high-level explanations, navigation hints, and starting points for each subdirectory so maintainers and contributors can quickly understand responsibilities and where to look for implementation code or further documentation.
 
-
-### File Organization
-
-There are no files at the _docs root; documentation is organized by feature area in subdirectories. Each subdirectory groups related documentation and source-level modules: agent/ focuses on agent coordination, prompts, and provider-neutral tool schemas; openplanter-desktop/ holds the desktop frontend source tree organized under its own frontend/ entrypoint. This hierarchical grouping keeps agent logic and UI/frontend concerns separated for clarity.
-
-## 📂 Subdirectories
-
-This directory contains the following subdirectories:
-
-### [📁 agent](./agent/README.md)
-
-**Purpose:** Contains agent-facing modules for coordinating agent turns, maintaining prompts, and converting tool schema definitions for multiple LLM providers.
+This directory holds the core modules used by the OpenPlanter agent to coordinate multi-turn agent behavior, centralize system prompt text, and define provider-neutral tool schemas plus helpers to convert them into provider-specific shapes.
 
 ![Files: 3](https://img.shields.io/badge/Files-3-blue)
 
----
+### [openplanter-desktop](./openplanter-desktop/README.md)
+Holds the desktop application frontend source tree and organization for the OpenPlanter desktop application, with an entry subdirectory that contains UI components, command logic, application state, and styles.
 
-### [📁 openplanter-desktop](./openplanter-desktop/README.md)
 
-**Purpose:** Holds the desktop application frontend source tree and organization; implementation is organized under a frontend/ entry subdirectory that contains UI components, command logic, application state, and styles.
-
-![Files: 0](https://img.shields.io/badge/Files-0-blue)
-
----
-## Dependencies
-
-### Internal Dependencies
-
-| Dependency | Usage |
-| --- | --- |
-| [agent/](../agent/.md) | Houses the agent-facing modules used across the system for prompt management and tool schema conversion. |
-| [openplanter-desktop/](../openplanter-desktop/.md) | Contains the desktop frontend source tree and the frontend entrypoint that implements UI and application state. |
-
-## Architecture Notes
-
-- Documentation is arranged hierarchically by feature area: agent logic is separated from the desktop frontend to maintain a clear boundary between runtime behavior and UI implementation.
-- The agent/ directory centralizes provider-neutral tool schema definitions and includes helpers to convert those schemas into provider-specific shapes, enabling reuse across multiple LLM providers.
+This directory is the container for the OpenPlanter desktop application's frontend code.
 
 ---
 
-## Navigation
+## 📊 Documentation Statistics
 
-**↑ Parent Directory:** [Go up](../README.md)
-**🔗 Related:** [agent](./agent/README.md) • [openplanter-desktop](./openplanter-desktop/README.md)
+- **Files Documented**: 9
+- **Directories**: 9
+- **Coverage**: 100%
+- **Last Updated**: 2026-06-04
 
 ---
 
-*Generated by Woden Docbot*
+## 🧭 How to Navigate
+
+> ℹ️ **INFO**
+> Each directory has its own README.md with detailed information about that section. Use the breadcrumb navigation at the top of each page to navigate back to parent directories.
+
+### Navigation Features
+
+- **Breadcrumbs** - At the top of each page, showing your current location
+- **Directory READMEs** - Each folder has a comprehensive overview
+- **File Documentation** - Click through to individual file documentation
+- **Search** - Use GitHub's search or your IDE's search functionality
+
+---
+
+## 🤖 About Woden DocBot
+
+This documentation is automatically generated and kept up-to-date by Woden DocBot, an AI-powered documentation assistant. DocBot analyzes code on every pull request and updates documentation to reflect changes.
+
+### Features
+
+- **Automatic Updates** - Documentation updates on every PR
+- **Comprehensive Coverage** - Files, functions, classes, and directories
+- **Smart Navigation** - Breadcrumbs, related files, and parent links
+- **AI-Powered** - Uses Azure GPT models for intelligent documentation generation
+
+---
+
+*Generated by Woden DocBot for OpenPlanter*
