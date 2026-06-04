@@ -39,6 +39,7 @@ export interface StepToolCall {
   name: string;
   keyArg: string;
   elapsed: number;
+  roleLabel?: string;
 }
 
 export interface ChatMessage {

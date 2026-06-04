@@ -533,6 +533,19 @@ html, body {
   font-size: 11px;
 }
 
+/* Investigative role badge for delegation tool calls */
+.tool-role-badge {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--accent);
+}
+
 /* Graph pane */
 .graph-pane {
   grid-column: 3;

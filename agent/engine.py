@@ -13,7 +13,7 @@ from typing import Any, Callable
 
 from .config import AgentConfig
 from .model import BaseModel, ImageData, ModelError, ModelTurn, ToolCall, ToolResult
-from .prompts import build_system_prompt
+from .prompts import build_system_prompt, detect_role_from_objective, INVESTIGATIVE_ROLES
 from .replay_log import ReplayLogger
 from .tool_defs import get_tool_definitions
 from .tools import WorkspaceTools
@@ -685,6 +685,12 @@ class RLMEngine:
         obs_summary = _summarize_observation(observation)
         self._emit(f"[d{depth}/s{step}]   -> {obs_summary} ({tool_elapsed:.1f}s)", on_event)
 
+        # Detect investigative role from objective for subtask/execute calls.
+        _step_role = detect_role_from_objective(
+            str(tc.arguments.get("objective", ""))
+        ) if tc.name in ("subtask", "execute") else "lead_investigator"
+        _step_role_label = INVESTIGATIVE_ROLES.get(_step_role, "Lead Investigator")
+
         if on_step:
             try:
                 on_step(
@@ -696,6 +702,8 @@ class RLMEngine:
                         "observation": observation,
                         "elapsed_sec": round(tool_elapsed, 2),
                         "is_final": is_final,
+                        "role": _step_role,
+                        "role_label": _step_role_label,
                     }
                 )
             except Exception:
@@ -880,7 +888,9 @@ class RLMEngine:
                         self._model_cache[cache_key] = self.model_factory(req_name, requested_effort)
                     subtask_model = self._model_cache[cache_key]
 
-            self._emit(f"[d{depth}] >> entering subtask: {objective}", on_event)
+            _role = detect_role_from_objective(objective)
+            _role_label = INVESTIGATIVE_ROLES.get(_role, "Lead Investigator")
+            self._emit(f"[d{depth}] >> [{_role_label}] entering subtask: {objective}", on_event)
             child_logger = replay_logger.child(depth, step) if replay_logger else None
             subtask_result = self._solve_recursive(
                 objective=objective,
@@ -936,7 +946,9 @@ class RLMEngine:
                 _saved_defs = cur.tool_defs
                 cur.tool_defs = get_tool_definitions(include_subtask=False, include_acceptance_criteria=self.config.acceptance_criteria)
 
-            self._emit(f"[d{depth}] >> executing leaf: {objective}", on_event)
+            _role = detect_role_from_objective(objective)
+            _role_label = INVESTIGATIVE_ROLES.get(_role, "Lead Investigator")
+            self._emit(f"[d{depth}] >> [{_role_label}] executing: {objective}", on_event)
             child_logger = replay_logger.child(depth, step) if replay_logger else None
             exec_result = self._solve_recursive(
                 objective=objective,

@@ -18,7 +18,30 @@ const KEY_ARGS: Record<string, string> = {
   fetch_url: "url",
   apply_patch: "path",
   hashline_edit: "path",
+  subtask: "objective",
+  execute: "objective",
 };
+
+/** Investigative role display names for team delegation. */
+const ROLE_LABELS: Record<string, string> = {
+  records_analyst: "Records Analyst",
+  digital_forensics: "Digital Forensics",
+  financial_analyst: "Financial Analyst",
+  field_intel: "Field Intel",
+  case_archivist: "Case Archivist",
+  lead_investigator: "Lead Investigator",
+};
+
+/** Extract investigative role from a bracketed tag in objective text. */
+function detectRoleFromObjective(objective: string): string {
+  const match = objective.match(/^\[([^\]]+)\]/);
+  if (!match) return "lead_investigator";
+  const tag = match[1].trim().toLowerCase();
+  for (const [slug, display] of Object.entries(ROLE_LABELS)) {
+    if (display.toLowerCase() === tag) return slug;
+  }
+  return "lead_investigator";
+}
 
 const md = new MarkdownIt({
   html: false,
@@ -265,7 +288,7 @@ export function createChatPane(): HTMLElement {
   let streamingBuf = "";
   let toolArgsBuf = "";
   let currentToolName = "";
-  let stepToolCalls: { name: string; keyArg: string; startTime: number; elapsed?: number }[] = [];
+  let stepToolCalls: { name: string; keyArg: string; startTime: number; elapsed?: number; roleLabel?: string }[] = [];
   let stepStartTime = Date.now();
 
   function resetBuffers() {
@@ -432,9 +455,21 @@ export function createChatPane(): HTMLElement {
         if (isLast) line.classList.add("last");
 
         const connector = isLast ? "\u2514\u2500 " : "\u251C\u2500 ";
-        const fnSpan = document.createElement("span");
-        fnSpan.className = "tool-fn";
-        fnSpan.textContent = tc.name;
+
+        // Show role badge for subtask/execute delegation calls
+        if (tc.roleLabel && tc.roleLabel !== "Lead Investigator") {
+          const roleBadge = document.createElement("span");
+          roleBadge.className = "tool-role-badge";
+          roleBadge.textContent = tc.roleLabel;
+          line.appendChild(document.createTextNode(connector));
+          line.appendChild(roleBadge);
+        } else {
+          const fnSpan = document.createElement("span");
+          fnSpan.className = "tool-fn";
+          fnSpan.textContent = tc.name;
+          line.appendChild(document.createTextNode(connector));
+          line.appendChild(fnSpan);
+        }
 
         const argSpan = document.createElement("span");
         argSpan.className = "tool-arg";
@@ -444,8 +479,6 @@ export function createChatPane(): HTMLElement {
         elSpan.className = "tool-elapsed";
         elSpan.textContent = tc.elapsed > 0 ? ` ${formatElapsed(tc.elapsed)}` : "";
 
-        line.appendChild(document.createTextNode(connector));
-        line.appendChild(fnSpan);
         line.appendChild(argSpan);
         line.appendChild(elSpan);
         tree.appendChild(line);
@@ -499,6 +532,7 @@ export function createChatPane(): HTMLElement {
         name: text,
         keyArg: "",
         startTime: Date.now(),
+        roleLabel: undefined,
       });
 
       const ai = ensureActivity();
@@ -514,8 +548,19 @@ export function createChatPane(): HTMLElement {
       const keyArg = extractKeyArg(currentToolName, toolArgsBuf);
       if (keyArg) {
         const current = stepToolCalls[stepToolCalls.length - 1];
-        if (current) current.keyArg = keyArg;
-        ai.setToolRunning(currentToolName, keyArg);
+        if (current) {
+          current.keyArg = keyArg;
+          // For subtask/execute, detect investigative role from objective
+          if ((currentToolName === "subtask" || currentToolName === "execute") && !current.roleLabel) {
+            const role = detectRoleFromObjective(keyArg);
+            current.roleLabel = ROLE_LABELS[role] || "Lead Investigator";
+          }
+        }
+        // Show role label in activity indicator for delegation calls
+        const displayName = (currentToolName === "subtask" || currentToolName === "execute")
+          ? (stepToolCalls[stepToolCalls.length - 1]?.roleLabel || currentToolName)
+          : currentToolName;
+        ai.setToolRunning(displayName, keyArg);
       } else {
         ai.setPreview(toolArgsBuf.slice(-120));
       }
@@ -541,6 +586,7 @@ export function createChatPane(): HTMLElement {
       name: tc.name,
       keyArg: tc.keyArg,
       elapsed: tc.elapsed || now - tc.startTime,
+      roleLabel: tc.roleLabel,
     }));
 
     // Remove activity indicator

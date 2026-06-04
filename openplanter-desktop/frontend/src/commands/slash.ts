@@ -4,6 +4,63 @@ import { openSession } from "../api/invoke";
 import { handleModelCommand, type CommandResult } from "./model";
 import { handleReasoningCommand } from "./reasoning";
 
+/** Build a structured case briefing prompt from /case args. */
+function handleCaseCommand(args: string): CommandResult {
+  const trimmed = args.trim();
+
+  if (!trimmed) {
+    // No args — show the briefing template for the user to fill in
+    return {
+      action: "handled",
+      lines: [
+        "CASE BRIEFING",
+        "─────────────",
+        "Type your case briefing below. Structure it like this:",
+        "",
+        "  /case Subject: [person, company, or entity name]",
+        "  Question: [what are you trying to find out?]",
+        "  Known: [what do you already know?]",
+        "  Theory: [your working hypothesis, if any]",
+        "",
+        "Or just: /case [subject] — and the team will ask for details.",
+      ],
+    };
+  }
+
+  // Parse structured fields if present
+  const subjectMatch = trimmed.match(/subject:\s*(.+?)(?=\s*(?:question:|known:|theory:|$))/i);
+  const questionMatch = trimmed.match(/question:\s*(.+?)(?=\s*(?:known:|theory:|$))/i);
+  const knownMatch = trimmed.match(/known:\s*(.+?)(?=\s*(?:theory:|$))/i);
+  const theoryMatch = trimmed.match(/theory:\s*(.+)/i);
+
+  let briefing: string;
+
+  if (subjectMatch) {
+    // Structured briefing
+    const parts = [`CASE BRIEFING\nSubject: ${subjectMatch[1].trim()}`];
+    if (questionMatch) parts.push(`Question: ${questionMatch[1].trim()}`);
+    if (knownMatch) parts.push(`Known intel: ${knownMatch[1].trim()}`);
+    if (theoryMatch) parts.push(`Working theory: ${theoryMatch[1].trim()}`);
+    parts.push("\nDeploy the investigation team. Start with a case plan, assign roles, and begin working leads.");
+    briefing = parts.join("\n");
+  } else {
+    // Quick briefing — just a subject
+    briefing = [
+      `CASE BRIEFING`,
+      `Subject: ${trimmed}`,
+      ``,
+      `Open a case on this subject. Develop a case plan, assign specialist roles,`,
+      `and begin the investigation. Ask me clarifying questions if needed.`,
+    ].join("\n");
+  }
+
+  return {
+    action: "send",
+    lines: [`Case opened: ${subjectMatch ? subjectMatch[1].trim() : trimmed}`],
+    sendText: briefing,
+  };
+}
+
 /** Dispatch a slash command. Returns null if not a slash command. */
 export async function dispatchSlashCommand(input: string): Promise<CommandResult | null> {
   const trimmed = input.trim();
@@ -30,6 +87,8 @@ export async function dispatchSlashCommand(input: string): Promise<CommandResult
           "  /model list [provider]  List available models",
           "  /reasoning          Show/set reasoning effort",
           "  /reasoning <level>  Set level (low, medium, high, off)",
+          "  /case               Open a case briefing (investigative mode)",
+          "  /case <subject>     Quick-brief a new investigation",
         ],
       };
 
@@ -93,6 +152,9 @@ export async function dispatchSlashCommand(input: string): Promise<CommandResult
 
     case "/reasoning":
       return handleReasoningCommand(args);
+
+    case "/case":
+      return handleCaseCommand(args);
 
     default:
       return {

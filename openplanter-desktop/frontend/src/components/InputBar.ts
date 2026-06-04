@@ -74,6 +74,16 @@ export function createInputBar(): HTMLElement {
         return;
       }
 
+      if (result.action === "send" && result.sendText) {
+        // Show feedback, then send the briefing text to the agent
+        if (result.lines.length > 0) {
+          addSystemMessage(result.lines.join("\n"));
+        }
+        // Send the briefing as a normal user message
+        sendToAgent(result.sendText);
+        return;
+      }
+
       if (result.lines.length > 0) {
         addSystemMessage(result.lines.join("\n"));
       }
@@ -93,6 +103,13 @@ export function createInputBar(): HTMLElement {
     }
 
     // Normal submit
+    sendToAgent(text);
+    textarea.value = "";
+    autoResize();
+  }
+
+  /** Send text to the agent as a user message (used by normal submit and /case). */
+  async function sendToAgent(msg: string) {
     appState.update((s) => ({
       ...s,
       isRunning: true,
@@ -101,14 +118,11 @@ export function createInputBar(): HTMLElement {
         {
           id: crypto.randomUUID(),
           role: "user" as const,
-          content: text,
+          content: msg,
           timestamp: Date.now(),
         },
       ],
     }));
-
-    textarea.value = "";
-    autoResize();
 
     // Create session lazily on first message
     if (!appState.get().sessionId) {
@@ -122,7 +136,7 @@ export function createInputBar(): HTMLElement {
     }
 
     try {
-      await solve(text, appState.get().sessionId!);
+      await solve(msg, appState.get().sessionId!);
     } catch (e) {
       appState.update((s) => ({
         ...s,
