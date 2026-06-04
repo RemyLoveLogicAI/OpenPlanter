@@ -108,7 +108,7 @@ export function createInputBar(): HTMLElement {
     autoResize();
   }
 
-  /** Send text to the agent as a user message (used by normal submit and /case). */
+  /** Send text to the agent as a user message (used by normal submit and /diagnose). */
   async function sendToAgent(msg: string) {
     appState.update((s) => ({
       ...s,

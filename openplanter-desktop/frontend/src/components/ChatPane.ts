@@ -22,25 +22,25 @@ const KEY_ARGS: Record<string, string> = {
   execute: "objective",
 };
 
-/** Investigative role display names for team delegation. */
+/** Diagnostic role display names for team delegation. */
 const ROLE_LABELS: Record<string, string> = {
-  records_analyst: "Records Analyst",
-  digital_forensics: "Digital Forensics",
-  financial_analyst: "Financial Analyst",
-  field_intel: "Field Intel",
-  case_archivist: "Case Archivist",
-  lead_investigator: "Lead Investigator",
+  storage_analyst: "Storage Analyst",
+  performance_specialist: "Performance Specialist",
+  recovery_agent: "Recovery Agent",
+  system_auditor: "System Auditor",
+  cleanup_crew: "Cleanup Crew",
+  lead_diagnostician: "Lead Diagnostician",
 };
 
-/** Extract investigative role from a bracketed tag in objective text. */
+/** Extract diagnostic role from a bracketed tag in objective text. */
 function detectRoleFromObjective(objective: string): string {
   const match = objective.match(/^\[([^\]]+)\]/);
-  if (!match) return "lead_investigator";
+  if (!match) return "lead_diagnostician";
   const tag = match[1].trim().toLowerCase();
   for (const [slug, display] of Object.entries(ROLE_LABELS)) {
     if (display.toLowerCase() === tag) return slug;
   }
-  return "lead_investigator";
+  return "lead_diagnostician";
 }
 
 const md = new MarkdownIt({
@@ -457,7 +457,7 @@ export function createChatPane(): HTMLElement {
         const connector = isLast ? "\u2514\u2500 " : "\u251C\u2500 ";
 
         // Show role badge for subtask/execute delegation calls
-        if (tc.roleLabel && tc.roleLabel !== "Lead Investigator") {
+        if (tc.roleLabel && tc.roleLabel !== "Lead Diagnostician") {
           const roleBadge = document.createElement("span");
           roleBadge.className = "tool-role-badge";
           roleBadge.textContent = tc.roleLabel;
@@ -550,10 +550,10 @@ export function createChatPane(): HTMLElement {
         const current = stepToolCalls[stepToolCalls.length - 1];
         if (current) {
           current.keyArg = keyArg;
-          // For subtask/execute, detect investigative role from objective
+          // For subtask/execute, detect diagnostic role from objective
           if ((currentToolName === "subtask" || currentToolName === "execute") && !current.roleLabel) {
             const role = detectRoleFromObjective(keyArg);
-            current.roleLabel = ROLE_LABELS[role] || "Lead Investigator";
+            current.roleLabel = ROLE_LABELS[role] || "Lead Diagnostician";
           }
         }
         // Show role label in activity indicator for delegation calls

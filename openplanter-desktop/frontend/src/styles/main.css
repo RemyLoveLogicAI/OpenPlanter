@@ -533,7 +533,7 @@ html, body {
   font-size: 11px;
 }
 
-/* Investigative role badge for delegation tool calls */
+/* Diagnostic role badge for delegation tool calls */
 .tool-role-badge {
   display: inline-block;
   padding: 0 5px;

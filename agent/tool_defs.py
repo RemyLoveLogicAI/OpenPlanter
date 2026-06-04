@@ -330,10 +330,10 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     {
         "name": "subtask",
         "description": (
-            "Assign an investigation task to a team member (sub-agent). "
-            "Prefix the objective with a role tag like [Records Analyst], "
-            "[Digital Forensics], [Financial Analyst], [Field Intel], or "
-            "[Case Archivist] to indicate which specialist should handle it. "
+            "Assign a diagnostic task to a team member (sub-agent). "
+            "Prefix the objective with a role tag like [Storage Analyst], "
+            "[Performance Specialist], [Recovery Agent], [System Auditor], or "
+            "[Cleanup Crew] to indicate which specialist should handle it. "
             "The result is returned as an observation."
         ),
         "parameters": {
@@ -341,7 +341,7 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
             "properties": {
                 "objective": {
                     "type": "string",
-                    "description": "Assignment for the team member. Prefix with a role tag: [Records Analyst], [Digital Forensics], [Financial Analyst], [Field Intel], or [Case Archivist].",
+                    "description": "Assignment for the team member. Prefix with a role tag: [Storage Analyst], [Performance Specialist], [Recovery Agent], [System Auditor], or [Cleanup Crew].",
                 },
                 "model": {
                     "type": "string",
@@ -365,9 +365,9 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
         "name": "execute",
         "description": (
             "Hand a focused task to a specialist for direct execution. "
-            "Use this for atomic assignments that need no further decomposition "
-            "(e.g. pull a specific record, write a file, run a query). "
-            "Prefix the objective with a role tag like [Records Analyst]. "
+            "Use this for atomic diagnostic commands that need no further "
+            "decomposition (e.g. run smartctl, check disk usage, read a log). "
+            "Prefix the objective with a role tag like [Storage Analyst]. "
             "The executor has full tool access but cannot delegate further."
         ),
         "parameters": {
@@ -375,7 +375,7 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
             "properties": {
                 "objective": {
                     "type": "string",
-                    "description": "Focused assignment. Prefix with a role tag: [Records Analyst], [Digital Forensics], [Financial Analyst], [Field Intel], or [Case Archivist].",
+                    "description": "Focused assignment. Prefix with a role tag: [Storage Analyst], [Performance Specialist], [Recovery Agent], [System Auditor], or [Cleanup Crew].",
                 },
                 "acceptance_criteria": {
                     "type": "string",
