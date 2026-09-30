@@ -461,8 +461,12 @@ export function createChatPane(): HTMLElement {
           const roleBadge = document.createElement("span");
           roleBadge.className = "tool-role-badge";
           roleBadge.textContent = tc.roleLabel;
+          const fnSpan = document.createElement("span");
+          fnSpan.className = "tool-fn";
+          fnSpan.textContent = ` ${tc.name}`;
           line.appendChild(document.createTextNode(connector));
           line.appendChild(roleBadge);
+          line.appendChild(fnSpan);
         } else {
           const fnSpan = document.createElement("span");
           fnSpan.className = "tool-fn";
