@@ -606,4 +606,38 @@ Trailing text.`;
     expect(toolLines[1].textContent).toContain("run_shell");
     expect(toolLines[1].textContent).toContain("npm test");
   });
+
+  it("renders role badge and tool name for specialist delegation calls", () => {
+    const pane = createChatPane();
+    appState.update((s) => ({
+      ...s,
+      messages: [
+        makeMsg({
+          role: "step-summary",
+          content: "",
+          stepNumber: 3,
+          stepTokensIn: 2000,
+          stepTokensOut: 800,
+          stepElapsed: 1500,
+          stepToolCalls: [
+            {
+              name: "subtask",
+              keyArg: "[Storage Analyst] check disk usage",
+              elapsed: 1500,
+              roleLabel: "Storage Analyst",
+            },
+          ],
+        }),
+      ],
+    }));
+
+    const summary = pane.querySelector(".message.step-summary");
+    expect(summary).not.toBeNull();
+    const badge = summary!.querySelector(".tool-role-badge");
+    expect(badge).not.toBeNull();
+    expect(badge!.textContent).toBe("Storage Analyst");
+    const fn = summary!.querySelector(".tool-fn");
+    expect(fn).not.toBeNull();
+    expect(fn!.textContent).toContain("subtask");
+  });
 });

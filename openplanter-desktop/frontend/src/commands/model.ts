@@ -37,8 +37,10 @@ export function inferProvider(model: string): string | null {
 }
 
 export interface CommandResult {
-  action: "handled" | "clear" | "quit";
+  action: "handled" | "clear" | "quit" | "send";
   lines: string[];
+  /** Text to send to the agent (only used with action "send"). */
+  sendText?: string;
 }
 
 /** Handle /model [args]. */

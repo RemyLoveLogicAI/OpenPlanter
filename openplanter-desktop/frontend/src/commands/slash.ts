@@ -4,6 +4,63 @@ import { openSession } from "../api/invoke";
 import { handleModelCommand, type CommandResult } from "./model";
 import { handleReasoningCommand } from "./reasoning";
 
+/** Build a structured diagnostic briefing prompt from /diagnose args. */
+function handleDiagnoseCommand(args: string): CommandResult {
+  const trimmed = args.trim();
+
+  if (!trimmed) {
+    // No args — show the briefing template for the user to fill in
+    return {
+      action: "handled",
+      lines: [
+        "DIAGNOSTIC BRIEFING",
+        "───────────────────",
+        "Describe your machine problem. Structure it like this:",
+        "",
+        "  /diagnose Symptom: [what's going wrong?]",
+        "  System: [OS, machine type, or affected component]",
+        "  Since: [when did it start?]",
+        "  Tried: [what have you already tried?]",
+        "",
+        "Or just: /diagnose [symptom] — and the team will triage it.",
+      ],
+    };
+  }
+
+  // Parse structured fields if present
+  const symptomMatch = trimmed.match(/symptom:\s*(.+?)(?=\s*(?:system:|since:|tried:|$))/i);
+  const systemMatch = trimmed.match(/system:\s*(.+?)(?=\s*(?:since:|tried:|$))/i);
+  const sinceMatch = trimmed.match(/since:\s*(.+?)(?=\s*(?:tried:|$))/i);
+  const triedMatch = trimmed.match(/tried:\s*(.+)/i);
+
+  let briefing: string;
+
+  if (symptomMatch) {
+    // Structured briefing
+    const parts = [`DIAGNOSTIC BRIEFING\nSymptom: ${symptomMatch[1].trim()}`];
+    if (systemMatch) parts.push(`System: ${systemMatch[1].trim()}`);
+    if (sinceMatch) parts.push(`Since: ${sinceMatch[1].trim()}`);
+    if (triedMatch) parts.push(`Already tried: ${triedMatch[1].trim()}`);
+    parts.push("\nDeploy the diagnostic team. Start with a triage plan, assign specialists, and begin investigating.");
+    briefing = parts.join("\n");
+  } else {
+    // Quick briefing — just a symptom description
+    briefing = [
+      `DIAGNOSTIC BRIEFING`,
+      `Symptom: ${trimmed}`,
+      ``,
+      `Open a diagnostic case on this issue. Triage the problem, assign specialist roles,`,
+      `and begin the investigation. Ask me clarifying questions if needed.`,
+    ].join("\n");
+  }
+
+  return {
+    action: "send",
+    lines: [`Diagnostic case opened: ${symptomMatch ? symptomMatch[1].trim() : trimmed}`],
+    sendText: briefing,
+  };
+}
+
 /** Dispatch a slash command. Returns null if not a slash command. */
 export async function dispatchSlashCommand(input: string): Promise<CommandResult | null> {
   const trimmed = input.trim();
@@ -30,6 +87,8 @@ export async function dispatchSlashCommand(input: string): Promise<CommandResult
           "  /model list [provider]  List available models",
           "  /reasoning          Show/set reasoning effort",
           "  /reasoning <level>  Set level (low, medium, high, off)",
+          "  /diagnose           Open a diagnostic briefing (disk-doctor mode)",
+          "  /diagnose <symptom> Quick-brief a machine investigation",
         ],
       };
 
@@ -93,6 +152,9 @@ export async function dispatchSlashCommand(input: string): Promise<CommandResult
 
     case "/reasoning":
       return handleReasoningCommand(args);
+
+    case "/diagnose":
+      return handleDiagnoseCommand(args);
 
     default:
       return {

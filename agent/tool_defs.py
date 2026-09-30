@@ -329,13 +329,19 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     },
     {
         "name": "subtask",
-        "description": "Spawn a recursive sub-agent to solve a smaller sub-problem. The result is returned as an observation.",
+        "description": (
+            "Assign a diagnostic task to a team member (sub-agent). "
+            "Prefix the objective with a role tag like [Storage Analyst], "
+            "[Performance Specialist], [Recovery Agent], [System Auditor], or "
+            "[Cleanup Crew] to indicate which specialist should handle it. "
+            "The result is returned as an observation."
+        ),
         "parameters": {
             "type": "object",
             "properties": {
                 "objective": {
                     "type": "string",
-                    "description": "Clear objective for the sub-agent to accomplish.",
+                    "description": "Assignment for the team member. Prefix with a role tag: [Storage Analyst], [Performance Specialist], [Recovery Agent], [System Auditor], or [Cleanup Crew].",
                 },
                 "model": {
                     "type": "string",
@@ -358,17 +364,18 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     {
         "name": "execute",
         "description": (
-            "Hand an atomic sub-problem to a leaf executor agent with full tool access. "
-            "Use this when the sub-problem requires no further decomposition and can be "
-            "solved directly (e.g. write a file, run tests, apply a patch). The executor "
-            "has no subtask or execute tools — it must solve the objective in one pass."
+            "Hand a focused task to a specialist for direct execution. "
+            "Use this for atomic diagnostic commands that need no further "
+            "decomposition (e.g. run smartctl, check disk usage, read a log). "
+            "Prefix the objective with a role tag like [Storage Analyst]. "
+            "The executor has full tool access but cannot delegate further."
         ),
         "parameters": {
             "type": "object",
             "properties": {
                 "objective": {
                     "type": "string",
-                    "description": "Clear, specific objective for the executor to accomplish.",
+                    "description": "Focused assignment. Prefix with a role tag: [Storage Analyst], [Performance Specialist], [Recovery Agent], [System Auditor], or [Cleanup Crew].",
                 },
                 "acceptance_criteria": {
                     "type": "string",
